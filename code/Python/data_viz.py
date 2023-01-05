@@ -2,6 +2,7 @@ from urllib.request import urlopen
 import pandas as pd
 import json
 import plotly.express as px
+import plotly.graph_objects as go
 import geopandas as gpd
 import plotly.io as pio
 
@@ -14,11 +15,81 @@ import plotly.io as pio
 def main():
     
     df = pd.read_csv("data/EmiliaRomagna.csv",  dtype={"COMUNE": str})
+        
+    # barchart dataframe production
+    df_bo = pd.DataFrame()
+    df_bo = df[df["COMUNE"] == "Bologna"].reset_index()
+    df_bo = df_bo[["anno","RD(kg)","RI(kg)","RU(kg)"]]
+
+    print("Building bar chart...")
+    # barchart building
+    fig_bar = go.Figure()
+
+    # first bar: RD(KG)
+    fig_bar.add_trace(go.Bar(
+        x = df_bo["anno"],
+        y = df_bo["RD(kg)"],
+        name = "Recycled waste",
+        marker_color = "rgb(102,194,165)",
+        # marker_line_width=1.5,
+        # marker_line_color="black"
+    ))
+
+     # second bar: RI(KG)
+    fig_bar.add_trace(go.Bar(
+        x = df_bo["anno"],
+        y = df_bo["RI(kg)"],
+        name = "Non-recyclable waste",
+        marker_color = "rgb(252,141,98)",
+        # marker_line_width=1.5,
+        # marker_line_color="black"
+    ))
+
+    # Third bar: RU(KG)
+    fig_bar.add_trace(go.Bar(
+        x = df_bo["anno"],
+        y = df_bo["RU(kg)"],
+        name = "Total Urban waste",
+        marker_color = "rgb(141,160,203)",
+        # marker_line_width=1.5,
+        # marker_line_color="black"
+    ))
+
+    fig_bar.update_layout(barmode='group', 
+        bargap=0.2,  
+        plot_bgcolor='rgba(0,0,0,0)',
+         font=dict(
+            family="Times New Roman, monospace",
+            size=14,
+            color="black"
+        ),
+        # legend=dict(
+        #     yanchor="top",
+        #     y=0.99,
+        #     xanchor="left",
+        #     x=0.01
+        # )
+    )
+    fig_bar.update_yaxes(title="Waste (kg)", 
+        showline=True, 
+        linecolor="black",
+        showgrid=True, 
+        gridcolor="black",
+        )
+    fig_bar.update_xaxes(title="Year", 
+        showline=True, 
+        linecolor="black", 
+        showgrid=False,
+        )
+    fig_bar.show()
+    pio.write_image(fig_bar,"../../graphs/barChart.pdf")
+    print("done")
+
+    print("Building choropleth map...")
+    df = df[df["anno"] == 2020]
     df_RD = pd.DataFrame()
     df_RD["name"] = df["COMUNE"]
     df_RD["RD"] = df["RD(%)"].str.rstrip('%').astype('float')
-    
-    # print(df_RD)
     with urlopen("https://raw.githubusercontent.com/openpolis/geojson-italy/master/geojson/limits_R_8_municipalities.geojson") as response:
         municipalities = json.load(response)
         # print(municipalities)
@@ -35,9 +106,9 @@ def main():
                   width = 1700,font_family="Calibri", font_size=12, margin={"r":0,"t":0,"l":0,"b":0})
        
        # export as static image
-        pio.write_image(fig, "er.png", scale=8)
+        pio.write_image(fig, "../../graphs/er.pdf", scale=8)
         fig.show()
-
+    print("done")
 
 if __name__ == '__main__':
 
