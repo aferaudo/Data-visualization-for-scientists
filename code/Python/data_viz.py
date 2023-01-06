@@ -103,7 +103,7 @@ def main():
         labels={"RD": "Recycling percentage"})
         fig.update_geos(showsubunits=False)
         fig.update_layout(height = 1000,
-                  width = 1700,font_family="Calibri", font_size=12, margin={"r":0,"t":0,"l":0,"b":0})
+                  width = 1700,font_family="Times New Roman", font_size=18, margin={"r":0,"t":0,"l":0,"b":0})
        
        # export as static image
         pio.write_image(fig, "../../graphs/er.pdf", scale=8)
